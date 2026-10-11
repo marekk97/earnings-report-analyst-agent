@@ -1,0 +1,277 @@
+# Metric-accuracy dataset (end-to-end): the agent answers the question; the scorer checks ONLY whether the
+# numbers it states in the brief are correct. Run:  earnings-analyst eval --suite accuracy
+#
+# Each case lists the facts its answer must contain. A fact is one number, defined by:
+#   golden: <id>            expected value from metric_goldens.yaml / cases.yaml (read independently from the filing)
+#   change_of: [<a>, <b>]   expected value = golden a - golden b (percentage-point change for percent metrics)
+#   value + unit            a literal expected value (segment figures; source noted in `source`)
+# and how to find it in the brief:
+#   aliases                 words that identify the fact (metric name, region, company); defaults per metric
+#   period_hint: true       the row/sentence must also name the fact's period (needed when several periods appear)
+#
+# A fact is "stated correctly" if a row (table) or sentence (prose) that mentions an alias - and the period, when
+# required - contains a number equal to the expected value at the precision the brief displays it. Signs are
+# ignored ("fell 2.8%" matches -2.80). Units: percent, pp, usd, ratio, days, times.
+
+accuracy_cases:
+  # ------------------------------------------------------------------ one metric, different companies
+  - id: acc_ko_opm
+    category: single_metric
+    question: "What was Coca-Cola's operating margin in fiscal 2024?"
+    facts: [{golden: ko_fy2024_operating_margin}]
+  - id: acc_cost_gm
+    category: single_metric
+    question: "What was Costco's gross margin in fiscal 2024?"
+    facts: [{golden: cost_fy2024_gross_margin}]
+  - id: acc_wmt_growth
+    category: single_metric
+    question: "How much did Walmart's revenue grow in fiscal 2024?"
+    facts: [{golden: wmt_fy2024_revenue_growth_yoy}]
+  - id: acc_msft_fcf
+    category: single_metric
+    question: "How much free cash flow did Microsoft generate in fiscal 2024?"
+    facts: [{golden: msft_fy2024_free_cash_flow}]
+  - id: acc_hd_current
+    category: single_metric
+    question: "What was Home Depot's current ratio at the end of fiscal 2023?"
+    facts: [{golden: hd_fy2023_current_ratio}]
+  - id: acc_cat_roe
+    category: single_metric
+    question: "What was Caterpillar's return on equity in 2024?"
+    facts: [{golden: cat_fy2024_roe}]
+  - id: acc_aapl_dso
+    category: single_metric
+    question: "What were Apple's days sales outstanding in fiscal 2024?"
+    facts: [{golden: aapl_fy2024_dso}]
+  - id: acc_pg_nm
+    category: single_metric
+    question: "What was Procter & Gamble's net margin in fiscal 2024?"
+    facts: [{golden: pg_fy2024_net_margin}]
+  - id: acc_mcd_growth
+    category: single_metric
+    question: "By how much did McDonald's revenue grow in 2023?"
+    facts: [{golden: mcd_fy2023_revenue_growth_yoy}]
+  - id: acc_adbe_fcfm
+    category: single_metric
+    question: "What was Adobe's free cash flow margin in fiscal 2023?"
+    facts: [{golden: adbe_fy2023_fcf_margin}]
+
+  # ------------------------------------------------------------------ several metrics at once
+  - id: acc_aapl_profitability
+    category: multi_metric
+    question: "Give me Apple's revenue growth, gross margin, operating margin and net margin for fiscal 2023."
+    facts:
+      - {golden: aapl_fy2023_revenue_growth_yoy}
+      - {golden: aapl_fy2023_gross_margin}
+      - {golden: aapl_fy2023_operating_margin}
+      - {golden: aapl_fy2023_net_margin}
+  - id: acc_googl_mix
+    category: multi_metric
+    question: "What were Alphabet's revenue growth, operating margin and free cash flow in 2023?"
+    facts:
+      - {golden: googl_fy2023_revenue_growth_yoy}
+      - {golden: googl_fy2023_operating_margin}
+      - {golden: googl_fy2023_free_cash_flow}
+  - id: acc_wmt_ops
+    category: multi_metric
+    question: "Summarise Walmart's fiscal 2024 revenue growth, gross margin and inventory turnover."
+    facts:
+      - {golden: wmt_fy2024_revenue_growth_yoy}
+      - {golden: wmt_fy2024_gross_margin}
+      - {golden: wmt_fy2024_inventory_turnover}
+  - id: acc_unh_margins
+    category: multi_metric
+    question: "What were UnitedHealth's revenue growth, operating margin and net margin in 2023?"
+    facts:
+      - {golden: unh_fy2023_revenue_growth_yoy}
+      - {golden: unh_fy2023_operating_margin}
+      - {golden: unh_fy2023_net_margin}
+  - id: acc_orcl_mix
+    category: multi_metric
+    question: "Report Oracle's fiscal 2024 revenue growth, operating margin and free cash flow margin."
+    facts:
+      - {golden: orcl_fy2024_revenue_growth_yoy}
+      - {golden: orcl_fy2024_operating_margin}
+      - {golden: orcl_fy2024_fcf_margin}
+  - id: acc_cat_scorecard
+    category: multi_metric
+    question: "For Caterpillar's 2023 fiscal year, what were revenue growth, operating margin, return on equity and the current ratio?"
+    facts:
+      - {golden: cat_fy2023_revenue_growth_yoy}
+      - {golden: cat_fy2023_operating_margin}
+      - {golden: cat_fy2023_roe}
+      - {golden: cat_fy2023_current_ratio}
+
+  # ------------------------------------------------------------------ comparing two periods
+  - id: acc_aapl_gm_2y
+    category: two_period
+    question: "How did Apple's gross margin in fiscal 2023 compare with fiscal 2022?"
+    facts:
+      - {golden: aapl_fy2023_gross_margin, period_hint: true}
+      - {golden: aapl_fy2022_gross_margin, period_hint: true}
+      - {change_of: [aapl_fy2023_gross_margin, aapl_fy2022_gross_margin]}
+  - id: acc_tsla_gm_2y
+    category: two_period
+    question: "Compare Tesla's gross margin in 2023 with 2022."
+    facts:
+      - {golden: tsla_fy2023_gross_margin, period_hint: true}
+      - {golden: tsla_fy2022_gross_margin, period_hint: true}
+      - {change_of: [tsla_fy2023_gross_margin, tsla_fy2022_gross_margin]}
+  - id: acc_intc_nm_2y
+    category: two_period
+    question: "How did Intel's net margin change between 2022 and 2023?"
+    facts:
+      - {golden: intc_fy2023_net_margin, period_hint: true}
+      - {golden: intc_fy2022_net_margin, period_hint: true}
+      - {change_of: [intc_fy2023_net_margin, intc_fy2022_net_margin]}
+  - id: acc_meta_om_2y
+    category: two_period
+    question: "How did Meta's operating margin in 2023 compare with 2022?"
+    facts:
+      - {golden: meta_fy2023_operating_margin, period_hint: true}
+      - {golden: meta_fy2022_operating_margin, period_hint: true}
+      - {change_of: [meta_fy2023_operating_margin, meta_fy2022_operating_margin]}
+  - id: acc_ko_cr_2y
+    category: two_period
+    question: "Was Coca-Cola's current ratio higher at the end of 2024 or 2023?"
+    facts:
+      - {golden: ko_fy2024_current_ratio, period_hint: true}
+      - {golden: ko_fy2023_current_ratio, period_hint: true}
+  - id: acc_nvda_growth_2y
+    category: two_period
+    question: "Compare NVIDIA's revenue growth in fiscal 2024 with fiscal 2023."
+    facts:
+      - {golden: nvda_fy2024_revenue_growth_yoy, period_hint: true}
+      - {golden: nvda_fy2023_revenue_growth_yoy, period_hint: true}
+
+  # ------------------------------------------------------------------ a specific quarter
+  - id: acc_msft_q2
+    category: quarter
+    question: "What were Microsoft's revenue growth and gross margin in the second quarter of fiscal 2024?"
+    facts:
+      - {golden: msft_q2fy2024_revenue_growth_yoy}
+      - {golden: msft_q2fy2024_gross_margin}
+  - id: acc_nke_q3
+    category: quarter
+    question: "What were Nike's gross margin and net margin in the third quarter of fiscal 2024?"
+    facts:
+      - {golden: nke_q3fy2024_gross_margin}
+      - {golden: nke_q3fy2024_net_margin}
+  - id: acc_amzn_q1
+    category: quarter
+    question: "How fast did Amazon's revenue grow in Q1 of 2024, and what was its net margin?"
+    facts:
+      - {golden: amzn_q1fy2024_revenue_growth_yoy}
+      - {golden: amzn_q1fy2024_net_margin}
+  - id: acc_cost_q4
+    category: quarter
+    question: "How much did Costco's revenue grow year over year in the fourth quarter of fiscal 2024?"
+    facts: [{golden: cost_q4fy2024_revenue_growth_yoy}]   # 16-week quarter, derived from the 10-K
+
+  # ------------------------------------------------------------------ over a period of time
+  - id: acc_aapl_gm_quarters
+    category: time_series
+    question: "What was Apple's gross margin in each quarter of fiscal 2024?"
+    facts:
+      - {golden: aapl_q1fy2024_gross_margin, period_hint: true}
+      - {golden: aapl_q2fy2024_gross_margin, period_hint: true}
+      - {golden: aapl_q3fy2024_gross_margin, period_hint: true}
+      - {golden: aapl_q4fy2024_gross_margin, period_hint: true}
+  - id: acc_msft_growth_quarters
+    category: time_series
+    question: "Show Microsoft's year-over-year revenue growth for each quarter of fiscal 2024."
+    facts:
+      - {golden: msft_q1fy2024_revenue_growth_yoy, period_hint: true}
+      - {golden: msft_q2fy2024_revenue_growth_yoy, period_hint: true}
+      - {golden: msft_q3fy2024_revenue_growth_yoy, period_hint: true}
+      - {golden: msft_q4fy2024_revenue_growth_yoy, period_hint: true}
+  - id: acc_hd_gm_quarters
+    category: time_series
+    question: "How did Home Depot's gross margin move across the four quarters of fiscal 2024?"
+    facts:
+      - {golden: hd_q1fy2024_gross_margin, period_hint: true}
+      - {golden: hd_q2fy2024_gross_margin, period_hint: true}
+      - {golden: hd_q3fy2024_gross_margin, period_hint: true}
+      - {golden: hd_q4fy2024_gross_margin, period_hint: true}
+  - id: acc_wmt_growth_years
+    category: time_series
+    question: "What was Walmart's revenue growth in fiscal 2022, 2023 and 2024?"
+    facts:
+      - {golden: wmt_fy2022_revenue_growth_yoy, period_hint: true}
+      - {golden: wmt_fy2023_revenue_growth_yoy, period_hint: true}
+      - {golden: wmt_fy2024_revenue_growth_yoy, period_hint: true}
+  - id: acc_nvda_nm_years
+    category: time_series
+    question: "Show NVIDIA's net margin for fiscal years 2022, 2023 and 2024."
+    facts:
+      - {golden: nvda_fy2022_net_margin, period_hint: true}
+      - {golden: nvda_fy2023_net_margin, period_hint: true}
+      - {golden: nvda_fy2024_net_margin, period_hint: true}
+
+  # ------------------------------------------------------------------ grouped by region / segment / product
+  # Segment values come from each 10-K's XBRL; Apple and Microsoft were confirmed against their published
+  # annual reports; Nike's four regions sum (with Global Brand Divisions) to NIKE Brand revenue.
+  - id: acc_aapl_regions
+    category: by_region
+    question: "Break down Apple's fiscal 2023 revenue by geographic segment."
+    facts:
+      - {value: 162560000000, unit: usd, aliases: [Americas], source: "AAPL FY2023 10-K segment note"}
+      - {value: 94294000000, unit: usd, aliases: [Europe], source: "AAPL FY2023 10-K segment note"}
+      - {value: 72559000000, unit: usd, aliases: [Greater China, China], source: "AAPL FY2023 10-K segment note"}
+      - {value: 24257000000, unit: usd, aliases: [Japan], source: "AAPL FY2023 10-K segment note"}
+      - {value: 29615000000, unit: usd, aliases: [Rest of Asia Pacific, Rest of Asia], source: "AAPL FY2023 10-K segment note"}
+  - id: acc_nke_regions
+    category: by_region
+    question: "What revenue did each of Nike's geographic regions generate in fiscal 2024?"
+    facts:
+      - {value: 21396000000, unit: usd, aliases: [North America], source: "NKE FY2024 10-K XBRL (SubsegmentsAxis)"}
+      - {value: 13607000000, unit: usd, aliases: [Europe, EMEA], source: "NKE FY2024 10-K XBRL (SubsegmentsAxis)"}
+      - {value: 7545000000, unit: usd, aliases: [Greater China], source: "NKE FY2024 10-K XBRL (SubsegmentsAxis)"}
+      - {value: 6729000000, unit: usd, aliases: [Asia Pacific, APLA], source: "NKE FY2024 10-K XBRL (SubsegmentsAxis)"}
+  - id: acc_msft_segments
+    category: by_region
+    question: "What were the revenue and operating income of each of Microsoft's segments in fiscal 2024?"
+    facts:
+      - {value: 77728000000, unit: usd, aliases: [Productivity], source: "MSFT FY2024 10-K segment note"}
+      - {value: 105362000000, unit: usd, aliases: [Intelligent Cloud], source: "MSFT FY2024 10-K segment note"}
+      - {value: 62032000000, unit: usd, aliases: [More Personal Computing, Personal Computing], source: "MSFT FY2024 10-K segment note"}
+      - {value: 40540000000, unit: usd, aliases: [Productivity], source: "MSFT FY2024 10-K segment operating income"}
+      - {value: 49584000000, unit: usd, aliases: [Intelligent Cloud], source: "MSFT FY2024 10-K segment operating income"}
+      - {value: 19309000000, unit: usd, aliases: [More Personal Computing, Personal Computing], source: "MSFT FY2024 10-K segment operating income"}
+  - id: acc_aapl_products
+    category: by_region
+    question: "How much revenue did each of Apple's product categories bring in during fiscal 2023?"
+    facts:
+      - {value: 200583000000, unit: usd, aliases: [iPhone], source: "AAPL FY2023 10-K"}
+      - {value: 29357000000, unit: usd, aliases: [Mac], source: "AAPL FY2023 10-K"}
+      - {value: 28300000000, unit: usd, aliases: [iPad], source: "AAPL FY2023 10-K"}
+      - {value: 39845000000, unit: usd, aliases: [Wearables], source: "AAPL FY2023 10-K"}
+      - {value: 85200000000, unit: usd, aliases: [Services, Service], source: "AAPL FY2023 10-K"}
+
+  # ------------------------------------------------------------------ comparing companies
+  - id: acc_ko_vs_pep
+    category: cross_company
+    question: "Compare the 2023 operating margins of Coca-Cola and PepsiCo."
+    facts:
+      - {golden: ko_fy2023_operating_margin, aliases: [Coca-Cola, Coca Cola, KO]}
+      - {golden: pep_fy2023_operating_margin, aliases: [PepsiCo, Pepsi, PEP]}
+  - id: acc_retail_gm
+    category: cross_company
+    question: "Compare the fiscal 2023 gross margins of Walmart, Costco and Home Depot."
+    facts:
+      - {golden: wmt_fy2023_gross_margin, aliases: [Walmart, WMT]}
+      - {golden: cost_fy2023_gross_margin, aliases: [Costco, COST]}
+      - {golden: hd_fy2023_gross_margin, aliases: [Home Depot, HD]}
+  - id: acc_aapl_vs_msft
+    category: cross_company
+    question: "Which had the higher net margin in fiscal 2023, Apple or Microsoft?"
+    facts:
+      - {golden: aapl_fy2023_net_margin, aliases: [Apple, AAPL]}
+      - {golden: msft_fy2023_net_margin, aliases: [Microsoft, MSFT]}
+  - id: acc_bigtech_growth
+    category: cross_company
+    question: "Compare 2023 revenue growth at Amazon, Alphabet and Meta."
+    facts:
+      - {golden: amzn_fy2023_revenue_growth_yoy, aliases: [Amazon, AMZN]}
+      - {golden: googl_fy2023_revenue_growth_yoy, aliases: [Alphabet, Google, GOOGL]}
+      - {golden: meta_fy2023_revenue_growth_yoy, aliases: [Meta, META]}

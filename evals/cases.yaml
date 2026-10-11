@@ -1,0 +1,43 @@
+# Evaluation cases.
+#
+# tool_cases  - deterministic checks of the metric registry against figures published in historical filings
+#               (these periods never change). No LLM; run after every change:  earnings-analyst eval --suite tools
+# Agent questions live in questions.yaml; broad metric goldens in metric_goldens.yaml (generated).
+
+tool_cases:
+  # --- annual figures (10-K) ------------------------------------------------
+  - {id: aapl_fy23_revenue_growth, ticker: AAPL, metric: revenue_growth_yoy, period: FY2023, expected: -2.80, tolerance: 0.01}
+  - {id: aapl_fy23_gross_margin, ticker: AAPL, metric: gross_margin, period: FY2023, expected: 44.13, tolerance: 0.01,
+     compare_to: prior_year, expected_comparison: 43.31}
+  - {id: aapl_fy23_operating_margin, ticker: AAPL, metric: operating_margin, period: FY2023, expected: 29.82, tolerance: 0.01,
+     compare_to: prior_year, expected_comparison: 30.29}
+  - {id: aapl_fy23_net_margin, ticker: AAPL, metric: net_margin, period: FY2023, expected: 25.31, tolerance: 0.01}
+  - {id: aapl_fy23_current_ratio, ticker: AAPL, metric: current_ratio, period: FY2023, expected: 0.988, tolerance: 0.001}
+  - {id: msft_fy24_revenue_growth, ticker: MSFT, metric: revenue_growth_yoy, period: FY2024, expected: 15.67, tolerance: 0.01}
+  - {id: msft_fy24_eps_growth, ticker: MSFT, metric: eps_growth_yoy, period: FY2024, expected: 21.90, tolerance: 0.01}
+  - {id: msft_fy24_free_cash_flow, ticker: MSFT, metric: free_cash_flow, period: FY2024, expected: 74071000000, tolerance: 1000000}
+  - {id: msft_fy24_interest_coverage, ticker: MSFT, metric: interest_coverage, period: FY2024, expected: 37.29, tolerance: 0.01}
+  - {id: nke_fy24_revenue_growth, ticker: NKE, metric: revenue_growth_yoy, period: FY2024, expected: 0.28, tolerance: 0.01}
+  - {id: nke_fy24_gross_margin, ticker: NKE, metric: gross_margin, period: FY2024, expected: 44.56, tolerance: 0.01}
+
+  # --- quarterly figures, including quarters derived from year-to-date / annual totals -----------
+  - {id: msft_q2fy24_revenue_growth, ticker: MSFT, metric: revenue_growth_yoy, period: Q2 FY2024, expected: 17.58, tolerance: 0.01}
+  - {id: aapl_q4fy23_revenue_growth_derived, ticker: AAPL, metric: revenue_growth_yoy, period: Q4 FY2023, expected: -0.72, tolerance: 0.01,
+     expect_note: derived}
+
+  # --- structured errors instead of empty results ----------------------------
+  - {id: jpm_current_ratio_missing, ticker: JPM, metric: current_ratio, period: FY2024, expect_error: missing_data}
+  - {id: aapl_q4_eps_not_derived, ticker: AAPL, metric: eps_growth_yoy, period: Q4 FY2023, expect_error: missing_data}
+  - {id: unknown_metric, ticker: AAPL, metric: ebitda_margin, period: FY2023, expect_error: unknown_metric}
+
+  # --- restatements and stock splits: the pipeline must use the restated figures and never mix bases --------
+  # Original vs restated values were confirmed by reading both filings (see README "Evaluation").
+  - {id: meta_fy23_fcf_restated, category: restatement, ticker: META, metric: free_cash_flow, period: FY2023,
+     expected: 44068000000, tolerance: 1000000}          # capex 27,266M in FY2023 10-K -> 27,045M in FY2024 10-K
+  - {id: pfe_fy23_revenue_growth_restated, category: restatement, ticker: PFE, metric: revenue_growth_yoy, period: FY2023,
+     expected: -41.14, tolerance: 0.01}                   # 59,553 / 101,175 (both restated in the FY2024 10-K)
+  - {id: tsla_q2fy24_net_margin_restated, category: restatement, ticker: TSLA, metric: net_margin, period: Q2 FY2024,
+     expected: 5.49, tolerance: 0.01}                     # net income 1,478M -> 1,400M (crypto fair-value recast)
+  - {id: nvda_fy23_eps_growth_split, category: stock_split, ticker: NVDA, metric: eps_growth_yoy, period: FY2023,
+     expected: -54.81, tolerance: 0.01}                   # 1.74 vs 3.85, same pre-split basis (not 0.174 vs 3.85)
+

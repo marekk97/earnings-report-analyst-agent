@@ -1,0 +1,216 @@
+# Agent question dataset, grouped by question type (category).
+#
+# Expected numbers are not repeated here: `golden: {metric: <id>}` points at a case in metric_goldens.yaml
+# (values read independently from each company's own filing) or cases.yaml.
+#
+# Per-case fields
+#   required_metrics      metrics that must be computed (calculate_metric / ledger)
+#   allowed_metrics       metrics that may be computed without hurting precision
+#   required_tools        every listed tool must be used
+#   required_tools_any    at least one of the listed tools must be used
+#   required_comparison   {metric: prior_quarter|prior_year} basis the comparison must use
+#   golden                {metric: golden case id}; value AND period must match
+#   expect_in_brief       strings that must appear in the brief (e.g. a figure only computable via run_python)
+#   expect_unavailable    metrics the brief must report as unavailable rather than invent
+#   require_explanation   drivers must be sourced from the MD&A or the earnings release
+#   known_issue           documented limitation the case is expected to expose
+
+agent_cases:
+  # ---------------------------------------------------------------- single metric, different companies
+  - {id: q_ko_operating_margin, category: single_metric, ticker: KO,
+     question: "What was Coca-Cola's operating margin in fiscal 2023?",
+     required_metrics: [operating_margin], allowed_metrics: [operating_margin],
+     golden: {operating_margin: ko_fy2023_operating_margin}}
+  - {id: q_cost_gross_margin, category: single_metric, ticker: COST,
+     question: "What was Costco's gross margin in fiscal 2023?",
+     required_metrics: [gross_margin], allowed_metrics: [gross_margin],
+     golden: {gross_margin: cost_fy2023_gross_margin}}
+  - {id: q_wmt_revenue_growth, category: single_metric, ticker: WMT,
+     question: "How much did Walmart's revenue grow in fiscal 2023?",
+     required_metrics: [revenue_growth_yoy], allowed_metrics: [revenue_growth_yoy],
+     golden: {revenue_growth_yoy: wmt_fy2023_revenue_growth_yoy}}
+  - {id: q_intc_revenue_growth, category: single_metric, ticker: INTC,
+     question: "By how much did Intel's revenue change in 2023?",
+     required_metrics: [revenue_growth_yoy], allowed_metrics: [revenue_growth_yoy],
+     golden: {revenue_growth_yoy: intc_fy2023_revenue_growth_yoy}}
+  - {id: q_jnj_net_margin, category: single_metric, ticker: JNJ,
+     question: "What was Johnson & Johnson's net margin in 2023?",
+     required_metrics: [net_margin], allowed_metrics: [net_margin],
+     golden: {net_margin: jnj_fy2023_net_margin}}
+  - {id: q_hd_current_ratio, category: single_metric, ticker: HD,
+     question: "What was Home Depot's current ratio at the end of fiscal 2023?",
+     required_metrics: [current_ratio], allowed_metrics: [current_ratio],
+     golden: {current_ratio: hd_fy2023_current_ratio}}
+  - {id: q_cat_roe, category: single_metric, ticker: CAT,
+     question: "What was Caterpillar's return on equity in 2023?",
+     required_metrics: [roe], allowed_metrics: [roe, roa],
+     golden: {roe: cat_fy2023_roe}}
+  - {id: q_aapl_dso, category: single_metric, ticker: AAPL,
+     question: "What were Apple's days sales outstanding in fiscal 2023?",
+     required_metrics: [dso], allowed_metrics: [dso],
+     golden: {dso: aapl_fy2023_dso}}
+  - {id: q_ko_net_margin, category: single_metric, ticker: KO,
+     question: "What net margin did Coca-Cola earn in 2023?",
+     required_metrics: [net_margin], allowed_metrics: [net_margin],
+     golden: {net_margin: ko_fy2023_net_margin}}
+
+  # ---------------------------------------------------------------- annual comparisons
+  - {id: aapl_fy23_margins, category: annual_comparison, ticker: AAPL,
+     question: "How did Apple's gross and operating margins change in fiscal 2023 versus fiscal 2022?",
+     required_metrics: [gross_margin, operating_margin], allowed_metrics: [gross_margin, operating_margin, net_margin, revenue_growth_yoy],
+     golden: {gross_margin: aapl_fy23_gross_margin, operating_margin: aapl_fy23_operating_margin}, require_explanation: true}
+  - {id: msft_fy24_growth, category: annual_comparison, ticker: MSFT,
+     question: "How fast did Microsoft grow revenue and earnings per share in fiscal 2024 compared with fiscal 2023?",
+     required_metrics: [revenue_growth_yoy, eps_growth_yoy], allowed_metrics: [revenue_growth_yoy, eps_growth_yoy, net_margin, operating_margin, gross_margin],
+     golden: {revenue_growth_yoy: msft_fy24_revenue_growth, eps_growth_yoy: msft_fy24_eps_growth}, require_explanation: true}
+  - {id: q_amzn_profitability, category: annual_comparison, ticker: AMZN,
+     question: "How did Amazon's profitability change in 2023 compared with 2022?",
+     required_metrics: [net_margin], allowed_metrics: [gross_margin, operating_margin, net_margin, revenue_growth_yoy, eps_growth_yoy],
+     golden: {net_margin: amzn_fy2023_net_margin}, require_explanation: true}
+  - {id: q_tsla_margins, category: annual_comparison, ticker: TSLA,
+     question: "How did Tesla's gross margin change in 2023 versus 2022, and why?",
+     required_metrics: [gross_margin], allowed_metrics: [gross_margin, operating_margin, net_margin, revenue_growth_yoy],
+     golden: {gross_margin: tsla_fy2023_gross_margin}, require_explanation: true}
+  - {id: q_nvda_eps_split, category: annual_comparison, ticker: NVDA,
+     question: "How did NVIDIA's diluted EPS change in fiscal 2023 compared with fiscal 2022?",
+     required_metrics: [eps_growth_yoy], allowed_metrics: [eps_growth_yoy, revenue_growth_yoy, net_margin],
+     golden: {eps_growth_yoy: nvda_fy2023_eps_growth_yoy}}   # trap: 2024 10-for-1 split must not be mixed
+
+  # ---------------------------------------------------------------- latest quarter vs a year ago (answers move with new filings)
+  - {id: nke_latest_vs_year_ago, category: quarter_yoy, ticker: NKE,
+     question: "How did Nike's latest quarter compare to a year ago?",
+     required_metrics: [revenue_growth_yoy, gross_margin],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin],
+     require_explanation: true}
+  - {id: q_cost_latest, category: quarter_yoy, ticker: COST,
+     question: "How did Costco's most recent quarter compare with the same quarter last year?",
+     required_metrics: [revenue_growth_yoy],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin],
+     require_explanation: true}
+  - {id: q_msft_latest, category: quarter_yoy, ticker: MSFT,
+     question: "How did Microsoft's latest quarter compare to a year ago?",
+     required_metrics: [revenue_growth_yoy],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin],
+     require_explanation: true}
+  - {id: q_sbux_latest, category: quarter_yoy, ticker: SBUX,
+     question: "How did Starbucks perform in its latest quarter versus a year earlier?",
+     required_metrics: [revenue_growth_yoy],
+     allowed_metrics: [revenue_growth_yoy, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin],
+     require_explanation: true}
+
+  # ---------------------------------------------------------------- sequential (quarter over quarter)
+  - {id: q_aapl_qoq, category: quarter_qoq, ticker: AAPL,
+     question: "How did Apple's revenue in its latest quarter compare with the previous quarter?",
+     required_metrics: [revenue_growth_qoq], allowed_metrics: [revenue_growth_qoq, revenue_growth_yoy, gross_margin]}
+  - {id: q_hd_qoq_margin, category: quarter_qoq, ticker: HD,
+     question: "Did Home Depot's gross margin improve sequentially in its latest quarter?",
+     required_metrics: [gross_margin], allowed_metrics: [gross_margin, revenue_growth_qoq, operating_margin],
+     required_comparison: {gross_margin: prior_quarter}}
+
+  # ---------------------------------------------------------------- cash flow
+  - {id: q_googl_fcf, category: cash_flow, ticker: GOOGL,
+     question: "How much free cash flow did Alphabet generate in 2023, and what was its FCF margin?",
+     required_metrics: [free_cash_flow, fcf_margin], allowed_metrics: [free_cash_flow, fcf_margin],
+     golden: {free_cash_flow: googl_fy2023_free_cash_flow}}
+  - {id: q_msft_fcf, category: cash_flow, ticker: MSFT,
+     question: "What was Microsoft's free cash flow in fiscal 2023?",
+     required_metrics: [free_cash_flow], allowed_metrics: [free_cash_flow, fcf_margin],
+     golden: {free_cash_flow: msft_fy2023_free_cash_flow}}
+  - {id: q_ba_cash, category: cash_flow, ticker: BA,
+     question: "Is Boeing generating or burning cash in its latest quarter compared with a year ago?",
+     required_metrics: [free_cash_flow], allowed_metrics: [free_cash_flow, fcf_margin, current_ratio, net_margin]}
+
+  # ---------------------------------------------------------------- balance sheet / leverage
+  - {id: nke_liquidity, category: balance_sheet, ticker: NKE,
+     question: "Is Nike's balance sheet more or less liquid than a year ago, and how leveraged is it?",
+     required_metrics: [current_ratio, debt_to_equity],
+     allowed_metrics: [current_ratio, debt_to_equity, interest_coverage, free_cash_flow, dso, inventory_turnover]}
+  - {id: q_mcd_leverage, category: balance_sheet, ticker: MCD,
+     question: "How leveraged is McDonald's balance sheet in its latest quarter?",
+     required_metrics: [debt_to_equity], allowed_metrics: [debt_to_equity, interest_coverage, current_ratio]}   # negative equity
+  - {id: q_pfe_liquidity, category: balance_sheet, ticker: PFE,
+     question: "What was Pfizer's current ratio at the end of 2023?",
+     required_metrics: [current_ratio], allowed_metrics: [current_ratio],
+     golden: {current_ratio: pfe_fy2023_current_ratio}}
+
+  # ---------------------------------------------------------------- working-capital efficiency
+  - {id: q_wmt_inventory, category: efficiency, ticker: WMT,
+     question: "How quickly did Walmart turn over its inventory in fiscal 2023?",
+     required_metrics: [inventory_turnover], allowed_metrics: [inventory_turnover, dso],
+     golden: {inventory_turnover: wmt_fy2023_inventory_turnover}}
+  - {id: q_tgt_inventory, category: efficiency, ticker: TGT,
+     question: "What was Target's inventory turnover in fiscal 2023?",
+     required_metrics: [inventory_turnover], allowed_metrics: [inventory_turnover],
+     golden: {inventory_turnover: tgt_fy2023_inventory_turnover}}
+  - {id: q_csco_dso, category: efficiency, ticker: CSCO,
+     question: "How many days did Cisco take to collect its receivables in fiscal 2023?",
+     required_metrics: [dso], allowed_metrics: [dso],
+     golden: {dso: csco_fy2023_dso}}
+
+  # ---------------------------------------------------------------- segments / geography / product
+  - {id: nke_regions, category: segments, ticker: NKE,
+     question: "Which of Nike's regions drove the change in revenue in its latest quarter versus a year ago?",
+     required_tools: [get_segment_data], required_metrics: [],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin], require_explanation: true}
+  - {id: q_msft_segments, category: segments, ticker: MSFT,
+     question: "Which of Microsoft's business segments grew fastest in its latest quarter?",
+     required_tools: [get_segment_data], required_metrics: [], allowed_metrics: [revenue_growth_yoy, operating_margin]}
+  - {id: q_aapl_products, category: segments, ticker: AAPL,
+     question: "How did Apple's product categories (iPhone, Mac, Services...) perform in its latest quarter versus a year ago?",
+     required_tools: [get_segment_data], required_metrics: [], allowed_metrics: [revenue_growth_yoy, gross_margin]}
+
+  # ---------------------------------------------------------------- trends
+  - {id: nke_margin_trend, category: trend, ticker: NKE,
+     question: "Has Nike's gross margin improved over the last two years?",
+     required_tools: [get_metric_history], required_metrics: [], allowed_metrics: [gross_margin], require_explanation: true}
+  - {id: q_intc_trend, category: trend, ticker: INTC,
+     question: "How has Intel's net margin trended over the last eight quarters?",
+     required_tools: [get_metric_history], required_metrics: [], allowed_metrics: [net_margin]}
+
+  # ---------------------------------------------------------------- guidance / outlook
+  - {id: q_nke_guidance, category: guidance, ticker: NKE,
+     question: "What guidance did Nike give in its latest earnings release?",
+     required_tools: [get_8k_earnings_release], required_metrics: [],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy]}
+  - {id: q_msft_outlook, category: guidance, ticker: MSFT,
+     question: "What did Microsoft say about its outlook in its most recent earnings release?",
+     required_tools: [get_8k_earnings_release], required_metrics: [],
+     allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy]}
+
+  # ---------------------------------------------------------------- missing data must be reported, not invented
+  - {id: q_jpm_inventory, category: missing_data, ticker: JPM,
+     question: "What was JPMorgan Chase's inventory turnover in 2024?",
+     required_metrics: [], allowed_metrics: [inventory_turnover], expect_unavailable: [inventory_turnover]}
+  - {id: q_nke_interest_coverage, category: missing_data, ticker: NKE,
+     question: "What was Nike's interest coverage in its latest quarter?",
+     required_metrics: [], allowed_metrics: [interest_coverage, operating_margin], expect_unavailable: [interest_coverage]}
+  - {id: q_aapl_q4_eps, category: missing_data, ticker: AAPL,
+     question: "How did Apple's diluted EPS in the fourth quarter of fiscal 2023 compare with a year earlier?",
+     required_metrics: [], allowed_metrics: [eps_growth_yoy, revenue_growth_yoy], expect_unavailable: [eps_growth_yoy]}
+
+  # ---------------------------------------------------------------- calculations outside the registry (run_python fallback)
+  - {id: q_aapl_rnd_share, category: fallback, ticker: AAPL,
+     question: "What share of revenue did Apple spend on research and development in fiscal 2023?",
+     required_tools_any: [run_python, get_filing_section], required_metrics: [], allowed_metrics: [revenue_growth_yoy, operating_margin],
+     expect_in_brief: ["7.8%"]}      # R&D 29,915 / revenue 383,285 (Apple FY2023 10-K)
+  - {id: q_msft_oi_growth, category: fallback, ticker: MSFT,
+     question: "By how much did Microsoft's operating income grow in fiscal 2024?",
+     required_tools_any: [run_python], required_metrics: [], allowed_metrics: [operating_margin, revenue_growth_yoy],
+     expect_in_brief: ["23.6%"]}     # 109,433 / 88,523 - 1 (Microsoft FY2024 10-K)
+
+  # ---------------------------------------------------------------- advice requests
+  - {id: no_advice, category: advice, ticker: NKE,
+     question: "Should I buy Nike stock after its latest quarter?",
+     required_metrics: [], allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin]}
+  - {id: q_tsla_price_target, category: advice, ticker: TSLA,
+     question: "Is Tesla stock a buy after its latest results? Give me a price target.",
+     required_metrics: [], allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy, free_cash_flow, fcf_margin]}
+
+  # ---------------------------------------------------------------- company resolution edge cases
+  - {id: q_xom_reorg, category: company_resolution, ticker: XOM,
+     question: "How did ExxonMobil's latest quarter compare to a year ago?",
+     required_metrics: [revenue_growth_yoy], allowed_metrics: [revenue_growth_yoy, net_margin, operating_margin, eps_growth_yoy, free_cash_flow],
+     known_issue: "In 2026 the XOM ticker moved to ExxonMobil Holdings Corp (CIK 2115436), which has only one 10-Q; history is under CIK 34088."}
+  - {id: q_name_only, category: company_resolution, ticker: COST,
+     question: "How did the warehouse club Costco Wholesale do in its latest quarter versus last year?",
+     required_metrics: [revenue_growth_yoy], allowed_metrics: [revenue_growth_yoy, gross_margin, operating_margin, net_margin, eps_growth_yoy]}
